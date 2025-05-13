@@ -1,7 +1,6 @@
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
 
-use GuzzleHttp\Client;
 use Dotenv\Dotenv;
 
 // Load environment variables
@@ -30,25 +29,36 @@ if (empty($zipCode) || !preg_match('/^\d{5}$/', $zipCode)) {
 }
 
 try {
-    $client = new Client([
-        'base_uri' => $_ENV['API_BASE_URL'],
-        'timeout' => $_ENV['API_TIMEOUT']
-    ]);
-
-    // Submit zip code to API with ServiceToken from env
-    $response = $client->get('/gapi/services/wordpress/zip-codes/validate/', [
-        'query' => ['zipcode' => $zipCode],
-        'headers' => [
-            'Authorization' => 'ServiceToken ' . $_ENV['SERVICE_TOKEN']
+    // Initialize cURL session
+    $ch = curl_init();
+    
+    // Set cURL options
+    curl_setopt_array($ch, [
+        CURLOPT_URL => $_ENV['API_BASE_URL'] . '/gapi/services/wordpress/zip-codes/validate/?zipcode=' . urlencode($zipCode),
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => $_ENV['API_TIMEOUT'],
+        CURLOPT_HTTPHEADER => [
+            'Authorization: ServiceToken ' . $_ENV['SERVICE_TOKEN']
         ]
     ]);
 
-    if ($response->getStatusCode() === 200) {
-        $responseData = json_decode($response->getBody(), true);
+    // Execute cURL request
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    
+    // Check for cURL errors
+    if (curl_errno($ch)) {
+        throw new Exception(curl_error($ch));
+    }
+    
+    // Close cURL session
+    curl_close($ch);
 
+    if ($httpCode === 200) {
+        $responseData = json_decode($response, true);
 
-        $isValid = $responseData['valid'];
-        
+        error_log("API Response ->>>>>>: " . print_r(['valid' => $responseData['valid'] ? 'true' : 'false'], true));
+
         if ($responseData['valid'] === true) {
             echo json_encode([
                 'success' => true,
@@ -64,6 +74,7 @@ try {
         throw new Exception('Unexpected response from API');
     }
 } catch (Exception $e) {
+    error_log("Error: " . $e->getMessage());
     http_response_code(500);
     echo json_encode(['error' => 'An error occurred while validating the zip code']);
 } 
