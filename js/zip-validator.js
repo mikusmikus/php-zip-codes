@@ -3,17 +3,33 @@ document.addEventListener("DOMContentLoaded", function () {
   const form = document.getElementById("zipCodeForm");
   if (!form) return;
 
+  // Get claim button
+  const claimButton = document.querySelector(".g360-zip-code-claim-button");
+  if (claimButton) {
+    claimButton.disabled = true;
+  }
+
+  // Get input element
+  const zipInput = form.querySelector('input[name="zip_code"]');
+  const errorDiv = form.querySelector(".g360-zip-code-form-error");
+  const successDiv = form.querySelector(".g360-zip-code-form-success");
+
+  // Clear state when user starts typing
+  zipInput.addEventListener("input", function () {
+    hideMessages(errorDiv, successDiv);
+    if (claimButton) claimButton.disabled = true;
+  });
+
   // Handle form submission
   form.addEventListener("submit", async function (e) {
     e.preventDefault();
 
     // Get form elements
     const zipCode = form.zip_code.value;
-    const errorDiv = form.querySelector(".g360-zip-code-form-error");
-    const successDiv = form.querySelector(".g360-zip-code-form-success");
 
-    // Reset message displays
+    // Reset message displays and disable button
     hideMessages(errorDiv, successDiv);
+    if (claimButton) claimButton.disabled = true;
 
     try {
       // Send validation request
@@ -22,12 +38,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Handle response
       if (response.ok) {
-        handleSuccessResponse(data, form, successDiv, errorDiv);
+        handleSuccessResponse(data, form, successDiv, errorDiv, claimButton);
       } else {
         showError(errorDiv, data.error);
+        if (claimButton) claimButton.disabled = true;
       }
     } catch (error) {
       showError(errorDiv, "An error occurred while validating the zip code");
+      if (claimButton) claimButton.disabled = true;
     }
   });
 });
@@ -48,12 +66,14 @@ function showSuccess(successDiv, message) {
   successDiv.style.display = "block";
 }
 
-function handleSuccessResponse(data, form, successDiv, errorDiv) {
+function handleSuccessResponse(data, form, successDiv, errorDiv, claimButton) {
   if (data.success) {
     showSuccess(successDiv, data.message);
     form.reset();
+    if (claimButton) claimButton.disabled = false;
   } else {
     showError(errorDiv, data.message);
+    if (claimButton) claimButton.disabled = true;
   }
 }
 

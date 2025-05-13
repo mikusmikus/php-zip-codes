@@ -54,7 +54,7 @@ $dotenv->required(['API_BASE_URL', 'API_TIMEOUT', 'SERVICE_TOKEN']);
           </div>
           <div class="g360-zip-code-claim-action">
             <button
-              class="g360-button g360-button--primary g360-button--rounded g360-button--small"
+              class="g360-button g360-button--primary g360-button--rounded g360-button--small g360-zip-code-claim-button"
             >
               Claim zip code now
             </button>

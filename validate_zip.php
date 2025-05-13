@@ -46,12 +46,8 @@ try {
     if ($response->getStatusCode() === 200) {
         $responseData = json_decode($response->getBody(), true);
 
-  error_log("API Response ->>>>>>: " . print_r(['valid' => $isValid['valid'] ? 'true' : 'false'], true));
 
         $isValid = $responseData['valid'];
-        
-        
- 
         
         if ($responseData['valid'] === true) {
             echo json_encode([
@@ -68,7 +64,6 @@ try {
         throw new Exception('Unexpected response from API');
     }
 } catch (Exception $e) {
-    error_log("Error: " . $e->getMessage());
     http_response_code(500);
     echo json_encode(['error' => 'An error occurred while validating the zip code']);
 } 
