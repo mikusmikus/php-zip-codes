@@ -2,12 +2,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const form = document.getElementById("zipCodeForm");
   const zipInput = form.querySelector('input[name="zip_code"]');
   const errorDiv = form.querySelector(".g360-zip-code-form-error");
-  // const successDiv = form.querySelector(".g360-zip-code-form-success");
+
   const submitButton = form.querySelector('button[type="submit"]');
-  console.log("submitButton", submitButton);
-  console.log("form", form);
-  console.log("zipInput", zipInput);
-  console.log("errorDiv", errorDiv);
 
   const states = {
     initial: document.querySelector(".g360-zip-code-claim-initial"),
@@ -38,12 +34,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
     try {
       const response = await validateZipCode(zipCode);
-      const data = await response.json();
 
-      if (response.ok) {
-        handleSuccessResponse(data, states);
+      if (response.status === 403) {
+        showError(errorDiv, "Unauthorized origin");
       } else {
-        handleErrorResponse(data, states);
+        const data = await response.json();
+
+        if (response.ok) {
+          handleSuccessResponse(data, states);
+        } else {
+          handleErrorResponse(data, states);
+        }
       }
     } catch (error) {
       handleErrorResponse({ error: "An error occurred while validating the zip code" }, states);

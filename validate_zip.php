@@ -12,6 +12,20 @@ $dotenv->required(['API_BASE_URL', 'API_TIMEOUT', 'SERVICE_TOKEN']);
 
 header('Content-Type: application/json');
 
+// CORS protection
+$allowed_origin = $_ENV['ALLOWED_ORIGIN']; // change this to your actual domain
+
+if (isset($_SERVER['HTTP_ORIGIN'])) {
+    if ($_SERVER['HTTP_ORIGIN'] !== $allowed_origin) {
+        header('HTTP/1.1 403 Forbidden');
+        echo json_encode(['error' => 'Unauthorized origin']);
+        exit;
+    }
+    header('Access-Control-Allow-Origin: ' . $allowed_origin);
+    header('Access-Control-Allow-Methods: POST');
+    header('Access-Control-Allow-Headers: Content-Type');
+}
+
 // Only allow POST requests
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
