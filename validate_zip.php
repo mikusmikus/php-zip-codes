@@ -62,7 +62,6 @@ try {
         if ($responseData['valid'] === true) {
             echo json_encode([
                 'success' => true,
-                'message' => 'Zip code is valid and eligible for discount!'
             ]);
         } else {
             echo json_encode([
